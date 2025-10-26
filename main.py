@@ -60,6 +60,7 @@ while True:
         elif mode == 1:
             input_str = ''
             input_mode = random.randint(1, 4)
+
             for _ in range(random.randint(50, 200)):
                 if input_mode == 1:
                     wait_cartoon("Download:", word_list[random.randint(0, len(word_list) - 1)])
