@@ -37,11 +37,7 @@ jobs:
     # 4. 编译程序
     - name: Build with Nuitka
       run: |
-        python -m nuitka \
-          --standalone \
-          --onefile \
-          --follow-imports \
-          main.py
+        python -m nuitka --standalone --onefile --follow-imports --include-data-dir=nltk=nltk --windows-icon-from-ico=logo.png main.py
 
     # 5. 上传构建结果
     - name: Upload artifacts
