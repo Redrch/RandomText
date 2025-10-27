@@ -44,6 +44,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-${{ matrix.os }}
+        run: |
+          mkdir build
         path: |
           build/RandomText-win64.exe
           build/RandomText-linux.bin
