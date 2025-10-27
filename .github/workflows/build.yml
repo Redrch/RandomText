@@ -52,6 +52,6 @@ jobs:
           build/RandomText-win64.exe
           build/RandomText-linux.bin
           build/RandomText-macos.app
-        retention-days: 30
+        retention-days: 14
         compression-level: 6
         if-no-files-found: warn
