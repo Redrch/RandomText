@@ -37,15 +37,14 @@ jobs:
     # 4. 编译程序
     - name: Build with Nuitka
       run: |
-        python -m nuitka --standalone --onefile --follow-imports --include-data-dir=nltk=nltk --windows-icon-from-ico=logo.png main.py
+        python -c "from pathlib import Path; Path('build').mkdir(parents=True, exist_ok=True)"
+        python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --windows-icon-from-ico=logo.png --assume-yes-for-downloads main.py
 
     # 5. 上传构建结果
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: app-${{ matrix.os }}
-        run: |
-          mkdir build
         path: |
           build/RandomText-win64.exe
           build/RandomText-linux.bin
