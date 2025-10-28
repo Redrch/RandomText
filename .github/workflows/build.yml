@@ -46,9 +46,9 @@ jobs:
       with:
         name: app-${{ matrix.os }}
         path: |
-          build/RandomText-win64.exe
-          build/RandomText-linux.bin
-          build/RandomText-macos.app
+          RandomText-win64.exe
+          RandomText-linux.bin
+          RandomText-macos.app
         retention-days: 14
         compression-level: 6
         if-no-files-found: warn
