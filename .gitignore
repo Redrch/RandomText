@@ -2,5 +2,3 @@
 main.build
 main.dist
 main.onefile-build
-*.exe
-build/
