@@ -12,6 +12,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: linux
+            file_pattern: "*.bin"
+          - os: macos-latest
+            artifact_name: macos
+            file_pattern: "*.app"
+          - os: windows-latest
+            artifact_name: windows
+            file_pattern: "*.exe"
 
     # 在每个系统上运行
     runs-on: ${{ matrix.os }}
@@ -44,11 +54,9 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: app-${{ matrix.os }}
+        name: app-${{ matrix.artifact_name }}
         path: |
-          build/RandomText-win64.exe
-          build/RandomText-linux.bin
-          build/RandomText-macos.app
+          build/${{ matrix.file_pattern }}
         retention-days: 14
         compression-level: 6
         if-no-files-found: warn
