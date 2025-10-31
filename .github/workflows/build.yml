@@ -40,13 +40,17 @@ jobs:
       run: |
         python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --windows-icon-from-ico=logo.png --assume-yes-for-downloads main.py
 
+    # 5. 创建目录
+    - name: Create build directory
+      run: |
+        mkdir build/RandomText-${{ matrix.os }} || true
+
     # 5. 上传构建结果
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: app-${{ matrix.os }}
         path: |
-          mkdir build/${{ matrix.ps }}
           build/RandomText-${{ matrix.os }}/*
         retention-days: 30
         compression-level: 6
