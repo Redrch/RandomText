@@ -2,9 +2,8 @@ name: Nuitka Build (Windows / macOS / Linux)
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -83,3 +82,47 @@ jobs:
           name: RandomText-${{ matrix.os }}
           path: build/${{ matrix.os }}
           retention-days: 30
+
+  publish:
+    name: Create Release and Upload Artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    # Only publish on tag pushes
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release for tag
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            Automated release created by CI for tag ${{ github.ref_name }} (commit ${{ github.sha }}).
+          draft: false
+          prerelease: false
+
+      - name: Upload each artifact file as release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+        run: |
+          set -e
+          # strip the template part {?name,label}
+          UPLOAD_URL_CLEAN=${UPLOAD_URL%\{*}
+          echo "Upload URL: $UPLOAD_URL_CLEAN"
+          find artifacts -type f | while read -r file; do
+            fname=$(basename "$file")
+            echo "Uploading $fname"
+            curl -s -X POST "$UPLOAD_URL_CLEAN?name=$fname" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file"
+          done
