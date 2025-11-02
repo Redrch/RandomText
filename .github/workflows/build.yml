@@ -128,7 +128,7 @@ jobs:
           echo "Upload URL: $UPLOAD_URL_CLEAN"
 
           # Find matching files and .app bundles
-          find artifacts \( -type f \( -iname "*.exe" -o -iname "*.bin" -o -iname "start-win64.bat" -o -iname "start-macos.sh" -o -iname "start-linux.sh" \) -o -type d -iname "*.app" \) -print | while read -r item; do
+          find artifacts \( -type f \( -iname "RandomText*.exe" -o -iname "RandomText*.bin" -o -iname "start-win64.bat" -o -iname "start-macos.sh" -o -iname "start-linux.sh" \) -o -type d -iname "RandomText*.app" \) -print | while read -r item; do
             echo "Processing: $item"
             if [ -d "$item" ]; then
               # it's an .app bundle, zip it first
