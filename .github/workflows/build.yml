@@ -61,17 +61,20 @@ jobs:
       - name: Build with Nuitka (Linux)
         if: runner.os == 'Linux'
         run: |
+          source ./.venv/bin/activate
           python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build/${{ matrix.os }} --output-filename=RandomText-linux --assume-yes-for-downloads main.py
 
       - name: Build with Nuitka (macOS)
         if: runner.os == 'macOS'
         run: |
+          source ./.venv/bin/activate
           python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build/${{ matrix.os }} --output-filename=RandomText-macos --assume-yes-for-downloads main.py
 
       - name: Build with Nuitka (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          .\.venv\Scripts/activate
           python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build\${{ matrix.os }} --output-filename=RandomText-win64.exe --assume-yes-for-downloads main.py
 
       - name: List build output (Linux/macOS)
