@@ -1,0 +1,17 @@
+[project]
+name = "randomtext"
+version = "1.0"
+description = "This is a random text generator"
+requires-python = ">=3.13"
+dependencies = [
+    "nltk>=3.9.2",
+]
+
+[dependency-groups]
+dev = [
+    "imageio>=2.37.0",
+    "nuitka>=2.8.4",
+]
+
+[tool.uv]
+index-url = "https://mirrors.aliyun.com/pypi/simple/"
