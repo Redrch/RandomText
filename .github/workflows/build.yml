@@ -59,16 +59,21 @@ jobs:
         run: |
           if (-not (Test-Path -Path "build\\${{ matrix.os }}")) { New-Item -ItemType Directory -Path "build\\${{ matrix.os }}" | Out-Null }
 
-      - name: Build with Nuitka (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Build with Nuitka (Linux)
+        if: runner.os == 'Linux'
         run: |
-          python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build/${{ matrix.os }} --assume-yes-for-downloads main.py
+          python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build/${{ matrix.os }} --output-filename=RandomText-linux --assume-yes-for-downloads main.py
+
+      - name: Build with Nuitka (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build/${{ matrix.os }} --output-filename=RandomText-macos --assume-yes-for-downloads main.py
 
       - name: Build with Nuitka (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build\\${{ matrix.os }} --assume-yes-for-downloads main.py
+          python -m nuitka --standalone --onefile --include-data-dir=nltk=nltk --output-dir=build\${{ matrix.os }} --output-filename=RandomText-win64.exe --assume-yes-for-downloads main.py
 
       - name: List build output (Linux/macOS)
         if: runner.os != 'Windows'
@@ -110,22 +115,37 @@ jobs:
           body: |
             Automated release created by CI for tag ${{ github.ref_name }} (commit ${{ github.sha }}).
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'Beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'Alpha') }}
 
-      - name: Upload each artifact file as release asset
+      - name: Upload selected artifacts as release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
         run: |
-          set -e
+          set -euo pipefail
           # strip the template part {?name,label}
           UPLOAD_URL_CLEAN=${UPLOAD_URL%\{*}
           echo "Upload URL: $UPLOAD_URL_CLEAN"
-          find artifacts -type f | while read -r file; do
-            fname=$(basename "$file")
-            echo "Uploading $fname"
-            curl -s -X POST "$UPLOAD_URL_CLEAN?name=$fname" \
+
+          # Find matching files and .app bundles
+          find artifacts \( -type f \( -iname "*.exe" -o -iname "*.bin" -o -iname "start-win64.bat" -o -iname "start-macos.sh" -o -iname "start-linux.sh" \) -o -type d -iname "*.app" \) -print | while read -r item; do
+            echo "Processing: $item"
+            if [ -d "$item" ]; then
+              # it's an .app bundle, zip it first
+              base=$(basename "$item")
+              zip_tmp="/tmp/${base}.zip"
+              echo "Zipping $item -> $zip_tmp"
+              (cd "$(dirname "$item")" && zip -r "$zip_tmp" "$(basename "$item")")
+              upload_path="$zip_tmp"
+              upload_name="${base}.zip"
+            else
+              upload_path="$item"
+              upload_name=$(basename "$item")
+            fi
+
+            echo "Uploading asset: $upload_name"
+            curl -s -X POST "$UPLOAD_URL_CLEAN?name=$upload_name" \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/octet-stream" \
-              --data-binary @"$file"
+              --data-binary @"$upload_path"
           done
